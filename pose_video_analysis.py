@@ -11,6 +11,20 @@ mp_pose = mp.solutions.pose
 video_path = "balance_test.mp4"
 cap = cv2.VideoCapture(video_path)
 
+
+###
+# Obtener propiedades del video original
+frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+fps = cap.get(cv2.CAP_PROP_FPS)
+
+# Definir el codec y crear el objeto VideoWriter
+out = cv2.VideoWriter('output_with_keypoints.mp4',
+                      cv2.VideoWriter_fourcc(*'mp4v'),
+                      fps,
+                      (frame_width, frame_height))
+###
+
 # Preparar CSV
 output_csv = "keypoints_data.csv"
 csv_header = ["timestamp", "hip_x", "hip_y", "knee_x", "knee_y", "ankle_x", "ankle_y", "heel_x", "heel_y", "foot_x", "foot_y"]
@@ -57,12 +71,15 @@ with mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, min_tra
         # Opcional: mostrar video con marcadores
         mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
         cv2.imshow('Pose Tracking', frame)
+        out.write(frame)  # Guarda el frame actual con keypoints
+
 
         if cv2.waitKey(1) & 0xFF == 27:
             break
 
 # Cierre
 cap.release()
+out.release()  # Libera el archivo de salida
 cv2.destroyAllWindows()
 csv_file.close()
 print(f"Puntos clave guardados en: {output_csv}")
